@@ -1,4 +1,4 @@
-# Treni Young  https://script.google.com/macros/s/AKfycbwGimOePThkIg5nIM5qS77gU_bcWMDegdA5lARb6yAP4_5N5WQ5qn9YZjT2dZtDN3qQcA/exec
+# Treni Young 
 
 Web app (Google Apps Script) che risponde a una domanda semplice: **conviene che salga io o che scenda lei?**
 
@@ -8,6 +8,8 @@ Dati due città (es. Pisa e Torino), un periodo e le fasce orarie di andata e ri
 - **chi scende** (città 2 → città 1 e ritorno)
 
 indicando il totale più basso per ciascuno e chi conviene che viaggi.
+
+Puoi prvare questo tool in: [clicca qui](https://script.google.com/macros/s/AKfycbwGimOePThkIg5nIM5qS77gU_bcWMDegdA5lARb6yAP4_5N5WQ5qn9YZjT2dZtDN3qQcA/exec)
 
 ## Regole di ricerca
 
