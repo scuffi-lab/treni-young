@@ -9,6 +9,8 @@ Dati due città (es. Pisa e Torino), un periodo, le fasce orarie di andata e rit
 
 indicando il totale più basso per ciascuno e chi conviene che viaggi.
 
+Puoi prvare questo tool in: [clicca qui](https://script.google.com/macros/s/AKfycbwGimOePThkIg5nIM5qS77gU_bcWMDegdA5lARb6yAP4_5N5WQ5qn9YZjT2dZtDN3qQcA/exec)
+
 ## Regole di ricerca
 
 - **Tariffa Young** (under 30) inclusa: Young, FrecciaYOUNG, Super Economy, Economy, Base… viene presa sempre l'offerta acquistabile più bassa; le offerte Senior sono escluse.
