@@ -1,7 +1,7 @@
 /**
  * Treni Young — confronto "chi sale / chi scende" su Trenitalia.
  * Web app Google Apps Script: interroga l'API lefrecce.it (la stessa di trenitalia.com),
- * solo treni diretti, tariffa Young inclusa, entrambe le direzioni, con controllo fuori fascia.
+ * solo treni diretti o anche con cambi (a scelta), tariffa Young inclusa, entrambe le direzioni, con controllo fuori fascia.
  */
 
 var BASE = 'https://www.lefrecce.it/Channels.Website.BFF.WEB/website';
@@ -64,6 +64,7 @@ function richiesta(dep, arr, quando, frecce) {
 /** Somma per ogni tratta tariffaria l'offerta piu' bassa acquistabile (Young incluse, Senior escluse). */
 function prezzo(s) {
   var tot = 0, descr = [];
+  if (!s.grids || !s.grids.length) return null;                // tariffe non disponibili: scarta
   for (var i = 0; i < s.grids.length; i++) {
     var best = null, g = s.grids[i];
     g.services.forEach(function (sv) {
@@ -109,15 +110,17 @@ function eseguiCatene(catene) {
           var so = s.solution, p = so.departureTime.substr(0, 16);
           ultimo = p;
           if (p < c.start || p > c.end || so.status !== 'SALEABLE') return;
-          if (so.trains.length !== 1) return;                         // solo diretti
+          if (!c.cambi && so.trains.length !== 1) return;             // solo diretti, salvo opzione "anche con cambi"
           var pr = prezzo(s);
           if (!pr) return;
-          var t = so.trains[0];
-          var key = p + '|' + t.acronym + t.name;
+          var t = so.trains[0], nCambi = so.trains.length - 1;
+          var treni = so.trains.map(function (x) { return x.acronym + ' ' + x.name; }).join(' + ');
+          var key = p + '|' + treni;
           if (c.ris[key] && c.ris[key].prezzo <= pr.p) return;
           c.ris[key] = {
             partenza: p, arrivo: so.arrivalTime.substr(0, 16), da: so.origin, a: so.destination,
-            durata: so.duration, treno: t.acronym + ' ' + t.name, categoria: t.denomination,
+            durata: so.duration, treno: treni, cambi: nCambi,
+            categoria: nCambi ? (nCambi === 1 ? '1 cambio' : nCambi + ' cambi') : t.denomination,
             prezzo: pr.p, offerta: pr.offerta
           };
         });
@@ -132,6 +135,7 @@ function eseguiCatene(catene) {
 
 function cerca(p) {
   var t0 = Date.now();
+  var conCambi = p.cambi === 'si';
   var idA = stazione(p.cittaA), idB = stazione(p.cittaB);
   var ora = adesso();
 
@@ -165,7 +169,7 @@ function cerca(p) {
         var s = leg[3][0].substr(0, 10) + 'T00:00', e = leg[3][1].substr(0, 10) + 'T23:59';
         if (s < ora) s = ora;
         [false, true].forEach(function (fr) {
-          catene.push({ wi: wi, verso: v[0], leg: leg[0], dep: leg[1], arr: leg[2], frecce: fr,
+          catene.push({ wi: wi, verso: v[0], leg: leg[0], dep: leg[1], arr: leg[2], frecce: fr, cambi: conCambi,
                         start: s, end: e, next: s, ris: {} });
         });
       });
@@ -208,7 +212,7 @@ function cerca(p) {
 
   return {
     generato: ora.replace('T', ' '), secondi: Math.round((Date.now() - t0) / 1000),
-    richieste: NRICH, cittaA: p.cittaA, cittaB: p.cittaB, nomeA: p.nomeA, nomeB: p.nomeB,
+    richieste: NRICH, conCambi: conCambi, cittaA: p.cittaA, cittaB: p.cittaB, nomeA: p.nomeA, nomeB: p.nomeB,
     settimane: out
   };
 }

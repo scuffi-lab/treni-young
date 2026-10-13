@@ -46,7 +46,7 @@
 <body>
 <div class="wrap">
   <h1>Treni <span>Young</span></h1>
-  <p class="sub">Chi sale e chi scende? Prezzi in tempo reale da Trenitalia · solo treni diretti · tariffa Young (under 30)</p>
+  <p class="sub">Chi sale e chi scende? Prezzi in tempo reale da Trenitalia · treni diretti o con cambi · tariffa Young (under 30)</p>
 
   <div class="card">
     <fieldset>
@@ -64,6 +64,10 @@
         <div><label>Dal</label><input type="date" id="dal"></div>
         <div><label>Al</label><input type="date" id="al"></div>
       </div>
+    </fieldset>
+    <fieldset>
+      <legend>Treni</legend>
+      <select id="cambi"><option value="no">Solo diretti (senza cambi)</option><option value="si">Anche con cambi</option></select>
     </fieldset>
     <fieldset>
       <legend>Andata — fascia di partenza</legend>
@@ -93,7 +97,7 @@
 
 <script>
 var G = ['lun','mar','mer','gio','ven','sab','dom'];
-var CAMPI = ['cittaA','nomeA','cittaB','nomeB','dal','al','andataDaGiorno','andataDaOra','andataAGiorno','andataAOra',
+var CAMPI = ['cittaA','nomeA','cittaB','nomeB','dal','al','cambi','andataDaGiorno','andataDaOra','andataAGiorno','andataAOra',
              'ritornoDaGiorno','ritornoDaOra','ritornoAGiorno','ritornoAOra','ritornoArrivoMax'];
 var DEF = { andataDaGiorno:'gio', andataAGiorno:'ven', ritornoDaGiorno:'lun', ritornoAGiorno:'lun' };
 
@@ -135,12 +139,12 @@ function gg(s){ var d = new Date(s.substr(0,10)+'T12:00:00'); return G[(d.getDay
 
 function riga(r, cls){
   return '<div class="tr '+(cls||'')+'"><div><div>'+gg(r.partenza)+' · <b>'+r.partenza.substr(11)+' → '+r.arrivo.substr(11)+'</b></div>'+
-    '<div class="t">'+esc(r.categoria)+' '+esc(r.treno.split(' ').pop())+' · '+esc(r.da)+' › '+esc(r.a)+' · '+esc(r.offerta)+'</div></div>'+
+    '<div class="t">'+(r.cambi ? '<b>'+esc(r.categoria)+'</b> · '+esc(r.treno) : esc(r.categoria)+' '+esc(r.treno.split(' ').pop()))+' · '+esc(r.da)+' › '+esc(r.a)+' · '+esc(r.offerta)+'</div></div>'+
     '<div class="p">'+eur(r.prezzo)+'</div></div>';
 }
 function gamba(titolo, g){
   var h = '<div class="leg"><b>'+titolo+'</b>';
-  if (!g.inFascia.length) h += '<div class="empty">Nessun treno diretto nella fascia</div>';
+  if (!g.inFascia.length) h += '<div class="empty">Nessun treno nella fascia</div>';
   g.inFascia.forEach(function(r,i){ h += riga(r, i===0 ? 'best' : ''); });
   g.fuoriFascia.forEach(function(r){ h += riga(r, 'out'); });
   return h + '</div>';
@@ -159,7 +163,7 @@ function mostra(res){
     [['AB',A],['BA',B]].forEach(function(x){
       var v = w.versi[x[0]];
       h += '<div class="col'+(win===x[0]?' win':'')+'"><div class="who">'+esc(x[1])+(win===x[0]?'<span class="badge">conviene</span>':'')+'</div>';
-      h += v.totale!==null ? '<div class="tot">'+eur(v.totale)+'</div>' : '<div class="tot none">Nessuna combinazione diretta</div>';
+      h += v.totale!==null ? '<div class="tot">'+eur(v.totale)+'</div>' : '<div class="tot none">Nessuna combinazione</div>';
       h += gamba('Andata', v.andata) + gamba('Ritorno', v.ritorno) + '</div>';
     });
     h += '</div></div>';
@@ -168,9 +172,9 @@ function mostra(res){
   var top = '<div class="card"><h2 style="margin:0 0 8px;font-size:18px">In sintesi</h2>';
   if (righe.length) {
     top += '<ol class="sum">' + righe.slice(0,4).map(function(r){ return '<li><b>'+eur(r.t)+'</b> — viaggia '+esc(r.chi)+', '+esc(r.w)+'</li>'; }).join('') + '</ol>';
-  } else top += '<div class="empty">Nessuna combinazione diretta nelle fasce scelte.</div>';
+  } else top += '<div class="empty">Nessuna combinazione nelle fasce scelte.</div>';
   top += '<div class="note">Prezzi rilevati il '+esc(res.generato)+' (ricerca in '+res.secondi+' s). Le tariffe Young/FrecciaYOUNG hanno posti limitati e cambiano spesso. ' +
-         'Le righe rosa sono treni fuori fascia a prezzo uguale o migliore. Intercity Notte = posto a sedere. Il biglietto si compra su trenitalia.com o app.</div></div>';
+         (res.conCambi ? 'Inclusi treni con cambi. ' : 'Solo treni diretti. ') + 'Le righe rosa sono treni fuori fascia a prezzo uguale o migliore. Intercity Notte = posto a sedere. Il biglietto si compra su trenitalia.com o app.</div></div>';
   $('out').innerHTML = top + h;
 }
 </script>
